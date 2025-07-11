@@ -13,10 +13,16 @@ class PayPalPayments {
         if (!document.getElementById('paypal-sdk')) {
             const script = document.createElement('script');
             script.id = 'paypal-sdk';
-            script.src = `https://www.paypal.com/sdk/js?client-id=${this.clientId}&currency=ZAR&components=buttons,marks`;
+            script.src = `https://www.paypal.com/sdk/js?client-id=${this.clientId}&currency=ZAR&components=buttons&locale=en_ZA`;
             script.onload = () => {
                 this.isLoaded = true;
-                this.initializePaymentButtons();
+                // Add a small delay to ensure DOM is ready
+                setTimeout(() => {
+                    this.initializePaymentButtons();
+                }, 500);
+            };
+            script.onerror = () => {
+                console.error('Failed to load PayPal SDK');
             };
             document.head.appendChild(script);
         }
@@ -86,6 +92,13 @@ class PayPalPayments {
     }
 
     renderPayPalButton(containerId, service) {
+        // Validate amount before rendering
+        const amount = parseFloat(service.amount);
+        if (isNaN(amount) || amount <= 0) {
+            console.error('Invalid amount:', service.amount);
+            return;
+        }
+
         paypal.Buttons({
             style: {
                 layout: 'horizontal',
@@ -96,25 +109,44 @@ class PayPalPayments {
             },
             createOrder: (data, actions) => {
                 return actions.order.create({
+                    intent: 'CAPTURE',
                     purchase_units: [{
                         amount: {
                             currency_code: 'ZAR',
-                            value: service.amount
+                            value: amount.toFixed(2)
                         },
-                        description: service.description
-                    }]
+                        description: service.description,
+                        custom_id: `BUBBLEROOT-${Date.now()}`,
+                        soft_descriptor: 'BUBBLEROOT'
+                    }],
+                    application_context: {
+                        brand_name: 'BubbleRoot Studios',
+                        locale: 'en-ZA',
+                        landing_page: 'BILLING',
+                        user_action: 'PAY_NOW'
+                    }
                 });
             },
             onApprove: (data, actions) => {
                 return actions.order.capture().then((details) => {
                     this.handleSuccessfulPayment(details, service);
+                }).catch((error) => {
+                    console.error('Payment capture failed:', error);
+                    alert('Payment processing failed. Please contact us to verify your payment.');
                 });
             },
             onError: (err) => {
                 console.error('PayPal Error:', err);
-                alert('Payment failed. Please try again or contact us for assistance.');
+                this.handlePaymentError(err);
+            },
+            onCancel: (data) => {
+                console.log('Payment cancelled:', data);
+                // User cancelled payment - no action needed
             }
-        }).render(`#${containerId}`);
+        }).render(`#${containerId}`).catch(err => {
+            console.error('PayPal button render failed:', err);
+            document.getElementById(containerId).innerHTML = '<p style="color: #e74c3c; font-size: 0.9rem;">Payment unavailable. Please contact us directly.</p>';
+        });
     }
 
     createCustomPaymentForm() {
@@ -199,6 +231,13 @@ class PayPalPayments {
         const container = document.getElementById('paypal-button-custom');
         container.innerHTML = ''; // Clear existing button
 
+        // Validate amount
+        const amount = parseFloat(service.amount);
+        if (isNaN(amount) || amount < 50) {
+            container.innerHTML = '<p style="color: #e74c3c; font-size: 0.9rem;">Please enter a valid amount (minimum R50)</p>';
+            return;
+        }
+
         paypal.Buttons({
             style: {
                 layout: 'vertical',
@@ -209,26 +248,69 @@ class PayPalPayments {
             },
             createOrder: (data, actions) => {
                 return actions.order.create({
+                    intent: 'CAPTURE',
                     purchase_units: [{
                         amount: {
                             currency_code: 'ZAR',
-                            value: service.amount
+                            value: amount.toFixed(2)
                         },
                         description: service.description,
-                        custom_id: `BUBBLEROOT-${Date.now()}`
-                    }]
+                        custom_id: `BUBBLEROOT-${Date.now()}`,
+                        soft_descriptor: 'BUBBLEROOT'
+                    }],
+                    application_context: {
+                        brand_name: 'BubbleRoot Studios',
+                        locale: 'en-ZA',
+                        landing_page: 'BILLING',
+                        user_action: 'PAY_NOW'
+                    }
                 });
             },
             onApprove: (data, actions) => {
                 return actions.order.capture().then((details) => {
                     this.handleSuccessfulPayment(details, service);
+                }).catch((error) => {
+                    console.error('Payment capture failed:', error);
+                    this.handlePaymentError(error);
                 });
             },
             onError: (err) => {
                 console.error('PayPal Error:', err);
-                alert('Payment failed. Please try again or contact us for assistance.');
+                this.handlePaymentError(err);
+            },
+            onCancel: (data) => {
+                console.log('Payment cancelled:', data);
             }
-        }).render('#paypal-button-custom');
+        }).render('#paypal-button-custom').catch(err => {
+            console.error('PayPal custom button render failed:', err);
+            container.innerHTML = '<p style="color: #e74c3c; font-size: 0.9rem;">Payment unavailable. Please contact us directly.</p>';
+        });
+    }
+
+    handlePaymentError(error) {
+        let errorMessage = 'Payment failed. Please try again.';
+        
+        if (error && error.details) {
+            // Handle specific PayPal errors
+            const details = error.details[0];
+            if (details && details.issue) {
+                switch (details.issue) {
+                    case 'CURRENCY_NOT_SUPPORTED':
+                        errorMessage = 'Currency not supported. Please contact us for alternative payment methods.';
+                        break;
+                    case 'INVALID_REQUEST':
+                        errorMessage = 'Invalid payment request. Please refresh the page and try again.';
+                        break;
+                    case 'INSTRUMENT_DECLINED':
+                        errorMessage = 'Payment method declined. Please try a different payment method.';
+                        break;
+                    default:
+                        errorMessage = `Payment error: ${details.description || 'Unknown error'}`;
+                }
+            }
+        }
+        
+        alert(errorMessage + ' If the problem persists, please contact us directly.');
     }
 
     handleSuccessfulPayment(details, service) {

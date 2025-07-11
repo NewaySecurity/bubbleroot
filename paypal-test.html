@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal Test - BubbleRoot Studios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        #paypal-button-container {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>PayPal Integration Test</h1>
+    
+    <div class="test-section">
+        <h3>Test Payment: Logo Design - R500</h3>
+        <p>This is a simple test to verify PayPal integration works correctly.</p>
+        <div id="paypal-button-container"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Debug Information</h3>
+        <div id="debug-info">
+            <p>Loading PayPal SDK...</p>
+        </div>
+    </div>
+
+    <script src="https://www.paypal.com/sdk/js?client-id=AQK_cbad0GQid963MwwPUTQp8sig5kHR6etmcGkd1GnXrPIYs7JjHbtO2lGsh9638S6IcnAoc-y1gNVY&currency=ZAR&locale=en_ZA"></script>
+    <script>
+        document.getElementById('debug-info').innerHTML = '<p>PayPal SDK loaded successfully!</p>';
+        
+        paypal.Buttons({
+            style: {
+                layout: 'vertical',
+                color: 'blue',
+                shape: 'rect',
+                label: 'pay'
+            },
+            createOrder: function(data, actions) {
+                console.log('Creating order...');
+                return actions.order.create({
+                    intent: 'CAPTURE',
+                    purchase_units: [{
+                        amount: {
+                            currency_code: 'ZAR',
+                            value: '500.00'
+                        },
+                        description: 'Test Logo Design Service',
+                        custom_id: 'TEST-' + Date.now(),
+                        soft_descriptor: 'BUBBLEROOT'
+                    }],
+                    application_context: {
+                        brand_name: 'BubbleRoot Studios',
+                        locale: 'en-ZA',
+                        landing_page: 'BILLING',
+                        user_action: 'PAY_NOW'
+                    }
+                });
+            },
+            onApprove: function(data, actions) {
+                console.log('Payment approved:', data);
+                return actions.order.capture().then(function(details) {
+                    console.log('Payment captured:', details);
+                    alert('Payment successful! Transaction ID: ' + details.id);
+                    document.getElementById('debug-info').innerHTML += '<p>✅ Payment successful: ' + details.id + '</p>';
+                });
+            },
+            onError: function(err) {
+                console.error('PayPal Error:', err);
+                alert('Payment error: ' + err.message);
+                document.getElementById('debug-info').innerHTML += '<p>❌ Error: ' + err.message + '</p>';
+            },
+            onCancel: function(data) {
+                console.log('Payment cancelled:', data);
+                document.getElementById('debug-info').innerHTML += '<p>❌ Payment cancelled</p>';
+            }
+        }).render('#paypal-button-container').then(function() {
+            console.log('PayPal button rendered successfully');
+            document.getElementById('debug-info').innerHTML += '<p>✅ PayPal button rendered</p>';
+        }).catch(function(err) {
+            console.error('Button render error:', err);
+            document.getElementById('debug-info').innerHTML += '<p>❌ Button render error: ' + err.message + '</p>';
+        });
+    </script>
+</body>
+</html>
