@@ -857,3 +857,206 @@ html {
     background-color: #e74c3c;
 }
 
+/* PayPal Payment Styles */
+.service-price {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--background-light);
+    text-align: center;
+}
+
+.service-price .price {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+}
+
+.payment-button {
+    margin-top: 0.5rem;
+}
+
+.payment-form {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+}
+
+.payment-section h3 {
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.payment-section p {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+.quick-services {
+    margin-bottom: 2rem;
+}
+
+.quick-services h4 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.service-options {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.service-option {
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--background-light);
+    border-radius: 8px;
+    background-color: white;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.service-option:hover {
+    border-color: var(--secondary-teal);
+    background-color: var(--background-light);
+    transform: translateY(-1px);
+}
+
+.service-option.selected {
+    border-color: var(--secondary-teal);
+    background-color: var(--secondary-teal);
+    color: white;
+}
+
+.custom-amount {
+    margin-bottom: 2rem;
+}
+
+.custom-amount h4 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.amount-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.amount-input label {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.amount-input input {
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.amount-input input:focus {
+    outline: none;
+    border-color: var(--secondary-teal);
+    box-shadow: 0 0 0 3px rgba(0, 179, 161, 0.2);
+}
+
+.paypal-custom-button {
+    margin-top: 1rem;
+    min-height: 60px;
+}
+
+/* Payment Success Modal */
+.payment-success-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.payment-success-modal .modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.success-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.payment-success-modal h2 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+}
+
+.payment-success-modal p {
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.payment-success-modal p strong {
+    color: var(--text-dark);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.modal-actions .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* Mobile responsiveness for payments */
+@media (max-width: 768px) {
+    .payment-form {
+        margin-top: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .service-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .amount-input {
+        gap: 1rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .payment-success-modal .modal-content {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+}
+
